@@ -1,32 +1,41 @@
 import sqlite3
 
-#Script to create "drug_calculator" database
+# Script to create "drug_calculator" database
 
-#Tables are:
-#users (id, username, password)
-#users_prescriptions_junction (userid, prescriptionid)
-#prescriptions (id, frequency)
-#prescriptions_drugs_junction (prescriptionid, drugid, quantity)
-#drugs (id, name)
+# Tables are:
+# users (id, username, password)
+# users_prescriptions_junction (userid, prescriptionid)
+# prescriptions (id, frequency)
+# prescriptions_drugs_junction (prescriptionid, drugid, quantity)
+# drugs (id, name)
 
-#Create DB/Connect to DB
+# Create DB/Connect to DB
 connection = sqlite3.connect("drug_calculator.db")
 
-#Create cursor
+# Create cursor
 cursor = connection.cursor()
 
+# General purpose method for running multiple statements
 def run_statements(statements, cursor, connection):
     for statement in statements:
         cursor.execute(statement)
         connection.commit()
 
+# General purpose method for printing field names and rows
 def print_results(cursor):
-    field_names = ""
-    if len(cursor.description) != 0:
-        for field in cursor.description:
-            field_names = field_names + field[0] + " | "
 
     results = cursor.fetchall()
+
+    if len(results) == 0:
+        return
+
+    field_names = ""
+
+    # Might not need this check, if len(results) != 0 ?
+    if len(cursor.description) != 0:
+
+        for field in cursor.description:
+            field_names = field_names + field[0] + " | "
 
     rows = []
 
@@ -89,7 +98,7 @@ create_statements = [user_setup, prescriptions_setup,
 drugs_setup, users_prescriptions_junction_setup,
 prescriptions_drugs_junction_setup]
 
-#Execute table creation statements and commit
+# Execute table creation statements and commit
 run_statements(create_statements, cursor, connection)
 
 insert_users = """
@@ -136,6 +145,7 @@ insert_statements = [insert_users, insert_prescriptions,
 insert_drugs, insert_users_prescription_junction,
 insert_prescriptions_drugs_junction]
 
+# Insert into tables
 run_statements(insert_statements, cursor, connection)
 
 select_statement = """
@@ -153,6 +163,8 @@ SELECT users.username, drugs.name FROM users
     drugs.id;
 """
 
+# Run select statement
 cursor.execute(select_statement)
 
+# Print results
 print_results(cursor)
